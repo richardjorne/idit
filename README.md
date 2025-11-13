@@ -8,7 +8,7 @@ Image Edit for everyone, edit like a pro.
 
 - Waterfall Scrolling Screen
 
-  ![waterfall example](waterfall.png)
+  ![waterfall example](https://github.com/richardjorne/idit/blob/main/imgs/waterfall.png?raw=true)
 
 ## What's the branching model?
 
