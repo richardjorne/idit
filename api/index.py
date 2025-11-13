@@ -64,6 +64,3 @@ def fetch_images(page: int, limit: int):
     images = [generate_random_image() for _ in range(limit)]
     return images
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)

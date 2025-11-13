@@ -1,6 +1,6 @@
 import type { ImageAsset } from '../types';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = '';
 
 export const fetchImages = async (page: number, limit: number): Promise<ImageAsset[]> => {
   try {
