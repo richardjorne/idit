@@ -11,8 +11,12 @@
   "dependencies": {
     "@google/genai": "^1.29.0",
     "concurrently": "^9.2.1",
+    "fastapi": "^0.0.8",
+    "gunicorn": "^0.0.1-security",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.6",
+    "uvicorn": "^0.0.1-security"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
