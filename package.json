@@ -2,7 +2,6 @@
   "name": "idit",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "concurrently \"vite\" \"uvicorn api.index:app --reload --port 8000\"",
     "build": "vite build",
