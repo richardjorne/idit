@@ -22,11 +22,11 @@ const Header: React.FC = () => {
           </div>
           <div className="flex items-center space-x-4">
             <button 
-              id="createButton" 
-              className="bg-brand-accent hover:bg-sky-400 text-white font-bold py-2 px-4 rounded-md text-sm transition duration-200"
-              onClick={() => console.log('Create button clicked')}
+              onClick={() => navigate('/edit')}
+              className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-3 rounded-full text-lg transition duration-200"
+              aria-label="Create new generation"
             >
-              Create
+              +
             </button>
             <button 
               id="loginButton" 

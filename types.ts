@@ -14,9 +14,23 @@ export interface Prompt {
 }
 
 export interface ImageAsset {
-  id: string;
+  id:string;
   url: string;
   width: number;
   height: number;
   prompt: Prompt;
+}
+
+export interface EditSession {
+  sessionId: string;
+  modelName: string;
+  cfgScale: number;
+  steps: number;
+  sampler: string;
+  strength: number;
+  seed: number;
+  status: 'CREATED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
+  prompt: string;
+  inputImageUrl?: string;
+  outputImageUrl?: string;
 }

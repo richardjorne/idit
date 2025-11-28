@@ -32,6 +32,20 @@
 }
 </script>
 <link rel="stylesheet" href="/index.css">
+<style>
+@keyframes gradient-x {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+.animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 5s ease infinite;
+}
+</style>
 </head>
   <body class="bg-brand-primary text-brand-text">
     <div id="root"></div>

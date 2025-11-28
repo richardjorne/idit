@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from './components/layout/Header';
 import ImageGalleryPage from './components/pages/ImageGalleryPage';
 import LoginPage from './components/pages/LoginPage';
+import EditSessionPage from './components/pages/EditSessionPage';
+import GeneratingPage from './components/pages/GeneratingPage';
+import ResultPage from './components/pages/ResultPage';
 
 const App: React.FC = () => {
   return (
@@ -13,6 +16,9 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<ImageGalleryPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/edit" element={<EditSessionPage />} />
+            <Route path="/generating" element={<GeneratingPage />} />
+            <Route path="/result" element={<ResultPage />} />
           </Routes>
         </main>
       </div>
