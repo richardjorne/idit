@@ -2,28 +2,36 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loginUser } from '../../services/authService';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    //Authentication goes here
-    console.log('Login attempt:', { email, password });
+    setError(null);
+    setLoading(true);
 
-    //go back to home page
-    navigate('/');
+    try {
+      const user = await loginUser(usernameOrEmail, password);
+      console.log('Login success:', user);
+
+      // Store the successfully logged-in user in localStorage for use on other pages later
+      localStorage.setItem('currentUser', JSON.stringify(user));
+
+      // After successful login, redirect to the homepage
+      navigate('/');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Login failed, please check your account or password');
+    } finally {
+      setLoading(false);
+    }
   };
-
-
-  /* 
-  I used AI to speed up the UI frontend design for the login page. I learned a lot about 
-  the different labels and modifications you can make to labels, headings, etc. I verified it by
-  running it and testing out my routing features with the new UI design.
-
-  */
 
   return (
     <div className="min-h-screen bg-brand-primary flex items-center justify-center px-4 pt-20">
@@ -33,18 +41,27 @@ const LoginPage: React.FC = () => {
           <p className="text-center text-gray-400 mb-6">Login to your account</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="text-sm text-red-400 bg-red-900/30 border border-red-500/50 rounded px-3 py-2">
+                {error}
+              </div>
+            )}
+
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Email
+              <label
+                htmlFor="usernameOrEmail"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
+                Username or Email
               </label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="usernameOrEmail"
+                type="text"
+                value={usernameOrEmail}
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent"
-                placeholder="your@email.com"
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent"
+                placeholder="yourname or your@email.com"
               />
             </div>
 
@@ -58,18 +75,30 @@ const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent"
-                placeholder="••••••••"
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent"
+                placeholder="Please enter your password"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-brand-accent hover:bg-sky-400 text-white font-bold py-2 px-4 rounded-md transition duration-200"
+              disabled={loading}
+              className="w-full flex items-center justify-center px-4 py-2 bg-brand-accent hover:bg-sky-400 disabled:opacity-60 disabled:cursor-not-allowed rounded-md text-sm font-medium text-slate-900 transition"
             >
-              Sign In
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
+
+          <div className="mt-4 text-center text-sm text-gray-400">
+            Don't have an account yet?{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/register')}
+              className="text-brand-accent hover:text-sky-400 underline underline-offset-2"
+            >
+              Sign up
+            </button>
+          </div>
 
           <div className="mt-6 text-center">
             <button
