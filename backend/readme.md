@@ -211,7 +211,7 @@ Log in using username or email plus password.
 
 ```json
 {
-  "username": "testuser",  // can be username OR email
+  "username": "testuser",
   "password": "123456"
 }
 ```
