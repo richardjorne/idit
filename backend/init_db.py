@@ -1,4 +1,5 @@
-# init_db.py
+# backend/init_db.py
+import os
 import psycopg2
 
 SQL = """
@@ -15,27 +16,28 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS credit_accounts (
   account_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
-  balance INT NOT NULL DEFAULT 0
+  user_id UUID NOT NULL UNIQUE REFERENCES users(user_id),
+  balance INTEGER NOT NULL DEFAULT 0
 );
 """
 
-def main():
-    conn = psycopg2.connect(
-        host="localhost",
-        port=5432,
-        database="postgres",      # Change to your library name
-        user="postgres",          # Change to your username
-        password="040506"         # Change to your password
-    )
-    conn.autocommit = True
-    cur = conn.cursor()
-    try:
-        cur.execute(SQL)
-        print("Tables created successfully.")
-    finally:
-        cur.close()
-        conn.close()
+def main() -> None:
+  # Use the same DATABASE_URL as SQLAlchemy
+  db_url = os.getenv(
+      "DATABASE_URL",
+      "postgresql://postgres:040506@localhost:5432/postgres"
+  )
+
+  conn = psycopg2.connect(db_url)
+  conn.autocommit = True
+  cur = conn.cursor()
+  try:
+      cur.execute(SQL)
+      print("Tables created successfully.")
+  finally:
+      cur.close()
+      conn.close()
+
 
 if __name__ == "__main__":
-    main()
+  main()

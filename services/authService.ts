@@ -6,9 +6,10 @@ export interface AuthUser {
   email: string;
 }
 
-const AUTH_BASE_URL = 'http://localhost:5000'; // If the backend port is different, change it here
+// Use environment variable in production, fallback to localhost for development
+const AUTH_BASE_URL =
+  import.meta.env.VITE_AUTH_BASE_URL || 'http://localhost:5000';
 
-// register
 export async function registerUser(
   username: string,
   email: string,
@@ -28,13 +29,12 @@ export async function registerUser(
   }
 
   if (!res.ok) {
-    throw new Error(data.error || data.message || 'Registration Failed');
+    throw new Error(data.error || data.message || 'Registration failed');
   }
 
   return data as AuthUser;
 }
 
-// login
 export async function loginUser(
   usernameOrEmail: string,
   password: string
@@ -58,13 +58,12 @@ export async function loginUser(
   }
 
   if (!res.ok) {
-    throw new Error(data.error || data.message || 'Login Failed');
+    throw new Error(data.error || data.message || 'Login failed');
   }
 
   return data as AuthUser;
 }
 
-// Get the current user from localStorage
 export function getCurrentUser(): AuthUser | null {
   if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem('currentUser');
@@ -76,8 +75,7 @@ export function getCurrentUser(): AuthUser | null {
   }
 }
 
-// logout
-export function logout() {
+export function logout(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem('currentUser');
 }
