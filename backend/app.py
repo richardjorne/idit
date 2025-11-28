@@ -2,7 +2,7 @@
 import os
 from flask import Flask, jsonify
 from flask_cors import CORS
-from auth_routes import auth_bp
+from backend.auth_routes import auth_bp
 
 def create_app() -> Flask:
     app = Flask(__name__)
