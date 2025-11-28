@@ -1,9 +1,9 @@
 # backend/auth_routes.py
 from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
-from database import SessionLocal
-from models import User, CreditAccount
-from security import hash_password, verify_password
+from backend.database import SessionLocal
+from backend.models import User, CreditAccount
+from backend.security import hash_password, verify_password
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api")
 
