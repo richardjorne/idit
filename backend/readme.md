@@ -1,169 +1,92 @@
 # Backend Auth Service
 
-This folder contains the **Flask-based authentication backend** for the IdIt project.  
+This folder contains the **Flask-based authentication backend** for the IdIt project.
+
+The backend is deployed on Render and connects to a remote PostgreSQL database.  
 It is responsible for:
 
 - Registering new users
 - Authenticating existing users
-- Storing and validating credentials against a PostgreSQL database
-
-The backend is designed to work both locally and in a deployed environment (Render).
+- Storing and validating credentials in PostgreSQL
 
 ---
 
-## Overview
+## What the backend does
 
-### Responsibilities
+### Endpoints
 
-- `POST /api/register`
-  - Create a new user (username, email, password)
-  - Hash the password using `bcrypt`
-  - Store the user in PostgreSQL
-  - Create an associated `credit_accounts` record
-
-- `POST /api/login`
-  - Authenticate a user using username **or** email plus password
-  - Verify the password using `bcrypt`
-  - Return basic user info (`userId`, `username`, `email`) on success
-
-### Tech Stack
-
-- **Flask** – web framework
-- **Flask-CORS** – CORS support for frontend integration
-- **SQLAlchemy** – ORM and DB session management
-- **PostgreSQL** – persistence layer
-- **psycopg2-binary** – PostgreSQL driver
-- **bcrypt** – password hashing and verification
-- **gunicorn** – WSGI server for production (Render)
-
----
-
-## File Overview
-
-All paths below are relative to `backend/`.
-
-- `app.py`
-  - Flask app factory and entry point
-  - Registers the auth blueprint
-  - Configures CORS (via `FRONTEND_ORIGINS` environment variable)
-  - Provides health check route `/`
-
-- `auth_routes.py`
-  - Defines:
-    - `POST /api/register`
-    - `POST /api/login`
-  - Uses SQLAlchemy sessions to interact with the database
-  - Uses `bcrypt` helpers from `security.py` for hashing and verification
-
-- `database.py`
-  - Reads `DATABASE_URL` from environment (with a local default)
-  - Creates SQLAlchemy `engine`, `SessionLocal`, and `Base` (declarative base)
-
-- `models.py`
-  - `User` model:
-    - `user_id` (UUID primary key)
-    - `username` (unique)
-    - `email` (unique)
-    - `password_hash`
-    - timestamps (`created_at`, `updated_at`)
-  - `CreditAccount` model:
-    - `account_id` (UUID primary key)
-    - `user_id` (FK to `User`, one-to-one)
-    - `balance` (integer, default 0)
-
-- `security.py`
-  - `hash_password(plain_password: str) -> str`
-  - `verify_password(plain_password: str, hashed_password: str) -> bool`
-  - Wraps `bcrypt` functionality
-
-- `init_db.py`
-  - One-shot database initialization script
-  - Uses `DATABASE_URL` environment variable
-  - Creates:
-    - `users` table
-    - `credit_accounts` table
-  - Enables `uuid-ossp` extension where available
-
-- `requirements.txt`
-  - Python dependencies for this backend service
-
----
-
-## Environment Variables
-
-The backend uses the following environment variables:
-
-- `DATABASE_URL` (required in production)
-  - PostgreSQL connection string
-  - Examples:
-    - Local: `postgresql://postgres:password@localhost:5432/postgres`
-    - Deployed (Render): `postgresql://user:password@host:5432/database_name`
-
-- `FRONTEND_ORIGINS` (optional but recommended)
-  - Comma-separated list of allowed frontend origins for CORS
-  - Used in `app.py` to configure `Flask-CORS`
-  - Example:
-
-    ```text
-    http://localhost:5173,https://idit-git-main-wusangggs-projects.vercel.app
-    ```
-
-If `FRONTEND_ORIGINS` is not set, the default is `http://localhost:5173`.
-
----
-
-## Running the Backend Locally
-
-### 1. Create and activate a virtual environment (optional but recommended)
-
-From the project root (the directory that contains `backend/`):
-
-```bash
-python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# macOS / Linux
-source .venv/bin/activate
-````
-
-### 2. Install dependencies
-
-```bash
-pip install -r backend/requirements.txt
-```
-
-### 3. Configure the database and initialize tables
-
-Either:
-
-* Set `DATABASE_URL` in your shell, or
-* Rely on the default value in `database.py` (for a local PostgreSQL instance)
-
-Then run:
-
-```bash
-python backend/init_db.py
-```
-
-This will create the required tables (and extension) in the configured PostgreSQL database.
-
-### 4. Start the Flask app
-
-```bash
-python backend/app.py
-```
-
-The backend will start on `http://localhost:5000/`.
-
-You can verify it by visiting:
+All endpoints are exposed under the Render base URL:
 
 ```text
-http://localhost:5000/
+https://idit.onrender.com
+````
+
+#### `POST /api/register`
+
+* Creates a new user account.
+* Hashes the password using `bcrypt`.
+* Stores a new record in the `users` table.
+* Creates an associated `credit_accounts` record.
+
+**Request body (JSON):**
+
+```json
+{
+  "username": "demo_user",
+  "email": "demo@example.com",
+  "password": "Secret123"
+}
 ```
 
-Expected response (JSON):
+**Successful response (`201 Created`):**
+
+```json
+{
+  "userId": "uuid-string",
+  "username": "demo_user",
+  "email": "demo@example.com"
+}
+```
+
+---
+
+#### `POST /api/login`
+
+* Authenticates an existing user.
+* Accepts either **username or email** in the `username` field.
+* Verifies the password using `bcrypt` against the stored hash.
+* Returns basic user info on success.
+
+**Request body (JSON):**
+
+```json
+{
+  "username": "demo_user",
+  "password": "Secret123"
+}
+```
+
+**Successful response (`200 OK`):**
+
+```json
+{
+  "userId": "uuid-string",
+  "username": "demo_user",
+  "email": "demo@example.com"
+}
+```
+
+---
+
+### Health check
+
+The root route is a simple health check:
+
+```text
+GET https://idit.onrender.com/
+```
+
+Expected JSON:
 
 ```json
 {"status": "ok", "message": "Auth backend is running"}
@@ -171,105 +94,127 @@ Expected response (JSON):
 
 ---
 
-## API Endpoints
+## How the backend is wired
 
-### `POST /api/register`
+### Tech stack
 
-**Description**: Create a new user account.
+* **Flask** – request handling
+* **Flask-CORS** – CORS configuration for frontend integration
+* **SQLAlchemy** – ORM and DB sessions
+* **PostgreSQL** – remote database (hosted externally)
+* **psycopg2-binary** – PostgreSQL driver
+* **bcrypt** – password hashing and verification
+* **gunicorn** – WSGI server on Render
 
-**URL** (local):
+### Key files
 
-```text
-http://localhost:5000/api/register
-```
+All paths are relative to `backend/`:
 
-**Request body** (JSON):
+* `app.py`
 
-```json
-{
-  "username": "testuser",
-  "email": "test@example.com",
-  "password": "123456"
-}
-```
+  * Flask app factory and entry point
+  * Registers the authentication blueprint
+  * Configures CORS using the `FRONTEND_ORIGINS` environment variable
+  * Exposes the health check route `/`
 
-**Behavior**:
+* `auth_routes.py`
 
-* Validates that all fields are present
-* Checks for duplicate username or email
-* Hashes the password with `bcrypt`
-* Inserts a new `User` and associated `CreditAccount` into the DB
+  * Implements:
 
-**Successful response** (`201 Created`):
+    * `POST /api/register`
+    * `POST /api/login`
+  * Uses SQLAlchemy sessions from `database.py`
+  * Uses `User` and `CreditAccount` models from `models.py`
+  * Uses `bcrypt` helpers from `security.py`
 
-```json
-{
-  "userId": "uuid-string",
-  "username": "testuser",
-  "email": "test@example.com"
-}
-```
+* `database.py`
 
-**Possible error responses**:
+  * Reads `DATABASE_URL` from environment
+  * Creates the SQLAlchemy `engine`, `SessionLocal`, and `Base`
 
-* `400 Bad Request` – missing or invalid data
-* `409 Conflict` – username or email already taken
-* `500 Internal Server Error` – unexpected error (check logs)
+* `models.py`
 
----
+  * `User` model:
 
-### `POST /api/login`
+    * `user_id` (UUID primary key)
+    * `username` (unique)
+    * `email` (unique)
+    * `password_hash`
+    * timestamps
+  * `CreditAccount` model:
 
-**Description**: Authenticate a user.
+    * `account_id` (UUID primary key)
+    * `user_id` (FK to `User`, one-to-one)
+    * `balance` (integer, default 0)
 
-**URL** (local):
+* `security.py`
 
-```text
-http://localhost:5000/api/login
-```
+  * `hash_password(plain_password: str) -> str`
+  * `verify_password(plain_password: str, hashed_password: str) -> bool`
 
-**Request body** (JSON):
+* `init_db.py`
 
-```json
-{
-  "username": "testuser",
-  "password": "123456"
-}
-```
+  * One-shot script used to initialize the **remote** PostgreSQL schema
+  * Uses the same `DATABASE_URL` as the deployed backend
+  * Creates:
 
-**Behavior**:
-
-* Treats `username` as either a username or an email
-* Fetches the matching user from the database
-* Verifies the password using `bcrypt`
-* Returns basic user information on success
-
-**Successful response** (`200 OK`):
-
-```json
-{
-  "userId": "uuid-string",
-  "username": "testuser",
-  "email": "test@example.com"
-}
-```
-
-**Possible error responses**:
-
-* `400 Bad Request` – missing or invalid data
-* `401 Unauthorized` – user not found or password mismatch
-* `500 Internal Server Error` – unexpected error (check logs)
+    * `users` table
+    * `credit_accounts` table
 
 ---
 
-## Manual Verification (Local)
+## Deployment configuration (Render)
 
-After starting the local backend (`python backend/app.py`) and initializing the DB, you can verify the endpoints with `curl`:
-
-### Register a user
+The auth backend is deployed as a Web Service on Render and started with:
 
 ```bash
-curl -X POST http://localhost:5000/api/register \
+gunicorn "backend.app:app" --bind 0.0.0.0:$PORT
+```
+
+### Environment variables (Render)
+
+* `DATABASE_URL`
+
+  * PostgreSQL connection string for the remote database.
+  * Example:
+
+    ```text
+    postgresql://user:password@host:5432/database_name
+    ```
+
+* `FRONTEND_ORIGINS`
+
+  * Comma-separated list of allowed frontend origins for CORS.
+  * Example:
+
+    ```text
+    http://localhost:5173,https://idit-git-main-wusangggs-projects.vercel.app
+    ```
+
+The same `DATABASE_URL` was used with `init_db.py` to create the tables in the remote database.
+
+---
+
+## How to verify the backend (directly)
+
+You can verify the deployed backend directly using `curl` or any HTTP client.
+
+### 1. Check health
+
+```bash
+curl https://idit.onrender.com/
+```
+
+Expected:
+
+```json
+{"status":"ok","message":"Auth backend is running"}
+```
+
+### 2. Register a user (remote DB)
+
+```bash
+curl -X POST https://idit.onrender.com/api/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "demo_user",
@@ -278,12 +223,15 @@ curl -X POST http://localhost:5000/api/register \
   }'
 ```
 
-Expected result: HTTP `201` and JSON with `userId`, `username`, `email`.
+Expected:
 
-### Log in with the same user
+* HTTP status `201 Created`
+* Response JSON containing `userId`, `username`, and `email`.
+
+### 3. Log in with the same user
 
 ```bash
-curl -X POST http://localhost:5000/api/login \
+curl -X POST https://idit.onrender.com/api/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "demo_user",
@@ -294,7 +242,7 @@ curl -X POST http://localhost:5000/api/login \
 or using email:
 
 ```bash
-curl -X POST http://localhost:5000/api/login \
+curl -X POST https://idit.onrender.com/api/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "demo@example.com",
@@ -302,11 +250,16 @@ curl -X POST http://localhost:5000/api/login \
   }'
 ```
 
-Expected result: HTTP `200` and JSON with `userId`, `username`, `email`.
+Expected:
+
+* HTTP status `200 OK`
+* Response JSON with the same user information.
+
+All of these operations are executed against the **remote PostgreSQL database** used by the deployed backend.
 
 ---
 
-## Verification with Deployed Frontend
+## How to verify the backend via the frontend
 
 The deployed frontend is available at:
 
@@ -314,68 +267,20 @@ The deployed frontend is available at:
 https://idit-git-main-wusangggs-projects.vercel.app
 ```
 
-The deployed backend (auth service) is available at:
+### End-to-end flow
 
-```text
-https://idit.onrender.com
-```
+1. Open the frontend URL in a browser.
+2. Navigate to the **Register** page:
 
-Frontend and backend integration:
+   * Fill in username, email, and password.
+   * Submit the form.
+   * The frontend calls `POST https://idit.onrender.com/api/register`.
+3. Navigate to the **Login** page:
 
-* The frontend uses `VITE_AUTH_BASE_URL` (set in Vercel) to call:
+   * Enter the same credentials.
+   * The frontend calls `POST https://idit.onrender.com/api/login`.
+   * On success, the frontend stores the returned user in `localStorage.currentUser` and redirects to the home page.
 
-  * `POST https://idit.onrender.com/api/register`
-  * `POST https://idit.onrender.com/api/login`
-* The backend uses `FRONTEND_ORIGINS` (set in Render) to allow CORS for:
+This demonstrates the full pipeline:
 
-  * `http://localhost:5173` (local dev)
-  * `https://idit-git-main-wusangggs-projects.vercel.app` (deployed frontend)
-
-### End-to-end test (deployed environment)
-
-1. Open the deployed frontend:
-
-   ```text
-   https://idit-git-main-wusangggs-projects.vercel.app
-   ```
-
-2. Go to the **Register** page:
-
-   * Fill in username, email, and password
-   * Submit
-   * This triggers `POST /api/register` against the Render backend
-
-3. Go to the **Login** page:
-
-   * Use the same credentials
-   * On success, the frontend stores the returned user in `localStorage.currentUser` and redirects to the home page
-
-This verifies:
-
-> Browser → Deployed frontend → Deployed Flask backend → PostgreSQL → response back to frontend
-
----
-
-## Troubleshooting
-
-* **CORS errors in the browser**
-
-  * Ensure `FRONTEND_ORIGINS` on the backend includes the exact frontend origin (e.g. `https://idit-git-main-wusangggs-projects.vercel.app`).
-  * Redeploy the backend after changing environment variables.
-
-* **`Failed to fetch` or network errors**
-
-  * Verify that the backend is reachable in a browser:
-
-    * `https://idit.onrender.com/` should return the health check JSON.
-  * Confirm that the frontend is configured with the correct `VITE_AUTH_BASE_URL`.
-
-* **Database errors (e.g., relation does not exist)**
-
-  * Re-run `backend/init_db.py` against the same `DATABASE_URL` used by the backend service.
-  * Confirm that the connection string is correct and the DB user has permission to create tables.
-
-* **Login always fails**
-
-  * Make sure you registered the user successfully before logging in.
-  * Ensure that the same password is used and that there are no typos in username/email.
+> Browser → Vercel frontend → Render auth backend → remote PostgreSQL → back to frontend.
