@@ -1,5 +1,55 @@
 from datetime import datetime
 from typing import Optional, List
+import uuid
+from sqlalchemy import Column, String, Text, DateTime, Boolean, ForeignKey, Integer
+from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+
+from backend.database import Base
+
+
+#Make SQLAlchemy models
+class EditSession(Base):
+    __tablename__ = "edit_sessions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), nullable=True)
+
+    prompt = Column(Text, nullable=False)
+    model = Column(String(100), nullable=False, default="default")
+    status = Column(String(50), nullable=False, default="created")
+
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    source_images = relationship("SourceImage", back_populates="session")
+    generated_images = relationship("GeneratedImage", back_populates="session")
+
+
+class SourceImage(Base):
+    __tablename__ = "source_images"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id = Column(UUID(as_uuid=True), ForeignKey("edit_sessions.id"), nullable=False)
+    url = Column(String(500), nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    session = relationship("EditSession", back_populates="source_images")
+
+
+class GeneratedImage(Base):
+    __tablename__ = "generated_images"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id = Column(UUID(as_uuid=True), ForeignKey("edit_sessions.id"), nullable=False)
+    url = Column(String(500), nullable=False)
+    index = Column(Integer, nullable=False, default=0)
+    shared = Column(Boolean, default=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    session = relationship("EditSession", back_populates="generated_images")
+    
 
 class User:
     def __init__(self, user_id: int, username: str, password_hash: str):
@@ -119,7 +169,7 @@ class ImageAsset:
     def delete(self):
         pass
 
-class EditSession:
+class EditSessionLegacy:
     def __init__(
         self,
         session_id: int,

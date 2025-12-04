@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import random
 import time
 from typing import List, Dict, Any
+from backend.edit_router import router as edit_router
 
 app = FastAPI()
 
@@ -14,6 +15,9 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
+#Include edit-session router (implements /api/edit-sessions, generate, share, etc.)
+app.include_router(edit_router, prefix="/api")
 
 sample_users = [
     {'id': 'user1', 'username': 'PixelDreamer', 'avatarUrl': ''},

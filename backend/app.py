@@ -3,6 +3,8 @@ import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 from backend.auth_routes import auth_bp
+from backend.edit_routes import edit_bp
+app.register_blueprint(edit_bp)
 
 def create_app() -> Flask:
     app = Flask(__name__)
@@ -22,6 +24,7 @@ def create_app() -> Flask:
     )
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(edit_bp)
 
     @app.route("/")
     def index():
