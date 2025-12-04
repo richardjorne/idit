@@ -61,45 +61,10 @@ def generate_random_image():
         },
     }
 
-from backend.database import SessionLocal
-from backend.models import GeneratedImage, EditSession
-
 @app.get("/api/images", response_model=List[Dict[str, Any]])
-def fetch_images(page: int = 1, limit: int = 20):
-    db = SessionLocal()
-    try:
-        offset = (page - 1) * limit
-
-        # Fetch only SHARED images
-        images = (
-            db.query(GeneratedImage)
-            .filter_by(shared=True)
-            .order_by(GeneratedImage.id.desc())
-            .offset(offset)
-            .limit(limit)
-            .all()
-        )
-
-        results = []
-        for img in images:
-            session = db.query(EditSession).filter_by(id=img.session_id).first()
-            
-            results.append({
-                "id": str(img.id),
-                "url": img.url,
-                "width": 512,  # Optional if not stored
-                "height": 512, # Optional if not stored
-                "prompt": {
-                    "id": str(session.id),
-                    "title": session.short_prompt or "",  # stored short prompt
-                    "content": session.prompt or "",
-                    "author": {"username": session.user_id or "Anonymous"},
-                    "reward": 1,  # optional placeholder
-                },
-            })
-
-        return results
-    finally:
-        db.close()
-
+def fetch_images(page: int, limit: int):
+   print(f"Fetching page {page} with limit {limit}")
+   # time.sleep(1)  # Simulate network delay
+   images = [generate_random_image() for _ in range(limit)]
+   return images
 
