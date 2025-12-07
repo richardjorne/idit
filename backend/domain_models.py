@@ -51,22 +51,14 @@ class GeneratedImage(Base):
     session = relationship("EditSession", back_populates="generated_images")
     
 
-class User:
-    def __init__(self, user_id: int, username: str, password_hash: str):
-        self.user_id = user_id
-        self.username = username
-        self.password_hash = password_hash
+class User(Base):
+    __tablename__ = "users"
 
-        self.credit_account: Optional[CreditAccount] = None
-        self.prompts: List['Prompt'] = []
-        self.images: List['ImageAsset'] = []
-
-    def register(self):
-        # logic elsewhere
-        pass
-
-    def authenticate(self, password: str) -> bool:
-        pass
+    user_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    username = Column(String(50), unique=True, nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    is_admin = Column(Boolean, default=False)  
 
 
 class Admin(User):
