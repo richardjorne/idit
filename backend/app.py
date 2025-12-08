@@ -4,6 +4,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from backend.auth_routes import auth_bp
 from backend.edit_routes import edit_bp
+from backend.prompt_routes import prompt_bp
 app.register_blueprint(edit_bp)
 
 def create_app() -> Flask:
@@ -13,7 +14,7 @@ def create_app() -> Flask:
     # Example: "http://localhost:5173,https://idit.vercel.app"
     origins_raw = os.getenv(
         "FRONTEND_ORIGINS",
-        "http://localhost:5173"
+        "http://localhost:5173,http://localhost:3000"
     )
     frontend_origins = [o.strip() for o in origins_raw.split(",") if o.strip()]
 
@@ -25,6 +26,7 @@ def create_app() -> Flask:
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(edit_bp)
+    app.register_blueprint(prompt_bp)
 
     @app.route("/")
     def index():
