@@ -11,7 +11,8 @@ def create_app() -> Flask:
     # Comma-separated list of allowed frontend origins.
     origins_raw = os.getenv(
         "FRONTEND_ORIGINS",
-        "http://localhost:5173"
+        #"http://localhost:5173",
+        "http://localhost:3000"
     )
     frontend_origins = [o.strip() for o in origins_raw.split(",") if o.strip()]
 
