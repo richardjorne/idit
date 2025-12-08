@@ -3,15 +3,12 @@ import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 from backend.auth_routes import auth_bp
-from backend.edit_routes import edit_bp
-from backend.prompt_routes import prompt_bp
-app.register_blueprint(edit_bp)
+# from backend.edit_routes import edit_bp
 
 def create_app() -> Flask:
     app = Flask(__name__)
 
     # Comma-separated list of allowed frontend origins.
-    # Example: "http://localhost:5173,https://idit.vercel.app"
     origins_raw = os.getenv(
         "FRONTEND_ORIGINS",
         "http://localhost:5173"
@@ -25,8 +22,8 @@ def create_app() -> Flask:
     )
 
     app.register_blueprint(auth_bp)
-    app.register_blueprint(edit_bp)
-    app.register_blueprint(prompt_bp)
+    # 👇 将来如果你有真正的 Flask 版 edit_bp，再在这里注册
+    # app.register_blueprint(edit_bp)
 
     @app.route("/")
     def index():
@@ -38,5 +35,4 @@ def create_app() -> Flask:
 app = create_app()
 
 if __name__ == "__main__":
-    # Local development
     app.run(debug=True)
