@@ -22,7 +22,6 @@ def create_app() -> Flask:
     )
 
     app.register_blueprint(auth_bp)
-    # 👇 将来如果你有真正的 Flask 版 edit_bp，再在这里注册
     # app.register_blueprint(edit_bp)
 
     @app.route("/")
