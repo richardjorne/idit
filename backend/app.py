@@ -14,7 +14,7 @@ def create_app() -> Flask:
     # Example: "http://localhost:5173,https://idit.vercel.app"
     origins_raw = os.getenv(
         "FRONTEND_ORIGINS",
-        "http://localhost:5173,http://localhost:3000"
+        "http://localhost:5173"
     )
     frontend_origins = [o.strip() for o in origins_raw.split(",") if o.strip()]
 
