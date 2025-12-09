@@ -3,10 +3,13 @@ import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 from backend.auth_routes import auth_bp
-# from backend.edit_routes import edit_bp
+from backend.images_routes import images_bp
+from backend.prompt_routes import prompt_bp
+from backend.edit_routes import edit_bp
 
 def create_app() -> Flask:
     app = Flask(__name__)
+
 
     # Comma-separated list of allowed frontend origins.
     origins_raw = os.getenv(
@@ -23,7 +26,9 @@ def create_app() -> Flask:
     )
 
     app.register_blueprint(auth_bp)
-    # app.register_blueprint(edit_bp)
+    app.register_blueprint(images_bp, url_prefix="/api")
+    app.register_blueprint(prompt_bp)
+    app.register_blueprint(edit_bp)
 
     @app.route("/")
     def index():
@@ -35,4 +40,4 @@ def create_app() -> Flask:
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

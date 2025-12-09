@@ -4,9 +4,50 @@ from sqlalchemy.exc import IntegrityError
 from backend.database import SessionLocal
 from backend.models import User
 from backend.models import Prompt
+from backend.domain_models import GeneratedImage, EditSession
 import uuid
 
 prompt_bp = Blueprint("prompts", __name__, url_prefix="/api/prompts")
+
+
+@prompt_bp.route("/user/<user_id>/images/shared", methods=["GET"])
+def get_user_shared_images(user_id):
+    """Fetch all shared images for a specific user."""
+    db = SessionLocal()
+    try:
+        page = request.args.get("page", 1, type=int)
+        limit = request.args.get("limit", 20, type=int)
+        offset = (page - 1) * limit
+        uid = uuid.UUID(user_id)
+        
+        # We need to join EditSession to filter by user_id
+        images = db.query(GeneratedImage).join(EditSession).filter(
+            GeneratedImage.shared == True,
+            EditSession.user_id == uid
+        ).order_by(GeneratedImage.created_at.desc()).offset(offset).limit(limit).all()
+        
+        result = []
+        for img in images:
+            result.append({
+                "id": str(img.id),
+                "url": img.url,
+                "width": 400,
+                "height": 600,
+                "prompt": {
+                    "id": str(img.session.id),
+                    "title": img.session.prompt,
+                    "content": img.session.prompt,
+                    "author": {
+                        "id": str(img.session.user.user_id),
+                        "username": img.session.user.username,
+                        "avatarUrl": ""
+                    },
+                    "reward": 0
+                },
+            })
+        return jsonify(result)
+    finally:
+        db.close()
 
 
 # GET /api/prompts/user/<user_id> - Get all prompts for a specific user

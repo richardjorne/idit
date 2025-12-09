@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "concurrently \"vite\" \"uvicorn api.index:app --reload --port 8000\"",
+    "dev": "concurrently \"vite\" \"python app.py\"",
     "build": "vite build",
     "preview": "vite preview"
   },

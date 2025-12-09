@@ -19,6 +19,7 @@ class User(Base):
 
     credit_account = relationship("CreditAccount", back_populates="user", uselist=False)
     prompts = relationship("Prompt", back_populates="owner")
+    edit_sessions = relationship("EditSession", back_populates="user")
 
 
 class CreditAccount(Base):
@@ -43,6 +44,7 @@ class Prompt(Base):
     status = Column(String(20), nullable=False, default="PENDING")  # PENDING, APPROVED, REJECTED
     times_used = Column(Integer, nullable=False, default=0)
     likes_count = Column(Integer, nullable=False, default=0)
+    reward = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
 

@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from backend.database import Base
+from backend.models import User
 
 
 #Make SQLAlchemy models
@@ -14,7 +15,7 @@ class EditSession(Base):
     __tablename__ = "edit_sessions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), nullable=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)
 
     prompt = Column(Text, nullable=False)
     model = Column(String(100), nullable=False, default="default")
@@ -23,6 +24,7 @@ class EditSession(Base):
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
+    user = relationship("User", back_populates="edit_sessions")
     source_images = relationship("SourceImage", back_populates="session")
     generated_images = relationship("GeneratedImage", back_populates="session")
 

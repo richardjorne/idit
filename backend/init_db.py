@@ -23,10 +23,8 @@ CREATE TABLE IF NOT EXISTS credit_accounts (
 
 def main() -> None:
   # Use the same DATABASE_URL as SQLAlchemy
-  db_url = os.getenv(
-      "DATABASE_URL",
-      "postgresql://postgres:040506@localhost:5432/postgres"
-  )
+  DEFAULT_DATABASE_URL = "postgresql://user:2RsZoQFlcGrUlmnncEPU1dF2RxIBwgPG@dpg-d4kvu7ngi27c73eqp10g-a.oregon-postgres.render.com/database_jqwu"
+  db_url = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
 
   conn = psycopg2.connect(db_url)
   conn.autocommit = True

@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 # Local default for development
-DEFAULT_DATABASE_URL = "postgresql://postgres:040506@localhost:5432/postgres"
+DEFAULT_DATABASE_URL = "postgresql://user:2RsZoQFlcGrUlmnncEPU1dF2RxIBwgPG@dpg-d4kvu7ngi27c73eqp10g-a.oregon-postgres.render.com/database_jqwu"
 
 # Use DATABASE_URL from environment if available (for production)
 DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)

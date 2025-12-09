@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, logout } from '../../services/authService';
-import { fetchUserPrompts, deletePrompt, updatePrompt, UserPrompt } from '../../services/promptService';
+import { fetchUserPrompts, deletePrompt, updatePrompt, UserPrompt, fetchUserSharedImages, ImageAsset } from '../../services/promptService';
 import Button from '../ui/Button';
 import Spinner from '../ui/Spinner';
+import SharedImageCard from './SharedImageCard';
 
 // Status badge colors
 const statusColors: Record<string, string> = {
@@ -158,6 +159,7 @@ const PersonalPage: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<{ userId: string; username: string; email: string } | null>(null);
   const [prompts, setPrompts] = useState<UserPrompt[]>([]);
+  const [sharedImages, setSharedImages] = useState<ImageAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'public' | 'private'>('all');
@@ -170,18 +172,20 @@ const PersonalPage: React.FC = () => {
       return;
     }
     setUser(currentUser);
-    loadUserPrompts(currentUser.userId);
+    loadUserData(currentUser.userId);
   }, [navigate]);
 
-  const loadUserPrompts = async (userId: string) => {
+  const loadUserData = async (userId: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetchUserPrompts(userId);
-      setPrompts(response.prompts);
+      const promptsResponse = await fetchUserPrompts(userId);
+      setPrompts(promptsResponse.prompts);
+      const sharedImagesResponse = await fetchUserSharedImages(userId);
+      setSharedImages(sharedImagesResponse);
     } catch (err: any) {
-      console.error('Failed to load prompts:', err);
-      setError(err.message || 'Failed to load your prompts');
+      console.error('Failed to load user data:', err);
+      setError(err.message || 'Failed to load your data');
     } finally {
       setLoading(false);
     }
@@ -243,6 +247,7 @@ const PersonalPage: React.FC = () => {
     private: prompts.filter((p) => !p.isPublic).length,
     totalLikes: prompts.reduce((sum, p) => sum + p.likesCount, 0),
     totalUses: prompts.reduce((sum, p) => sum + p.timesUsed, 0),
+    sharedCreations: sharedImages.length,
   };
 
   if (!user) {
@@ -286,6 +291,10 @@ const PersonalPage: React.FC = () => {
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50">
               <p className="text-2xl font-bold text-white">{stats.total}</p>
               <p className="text-sm text-gray-400">Total Prompts</p>
+            </div>
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50">
+              <p className="text-2xl font-bold text-purple-400">{stats.sharedCreations}</p>
+              <p className="text-sm text-gray-400">Shared Creations</p>
             </div>
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50">
               <p className="text-2xl font-bold text-blue-400">{stats.public}</p>
@@ -426,6 +435,27 @@ const PersonalPage: React.FC = () => {
                 onDelete={handleDeletePrompt}
                 onTogglePublic={handleTogglePublic}
                 onUse={handleUsePrompt}
+              />
+            ))}
+          </div>
+        )}
+
+        <h2 className="text-2xl font-bold text-white mb-4 mt-8">My Shared Creations</h2>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-12 h-12 border-4 border-brand-accent/30 border-t-brand-accent rounded-full animate-spin" />
+            <p className="mt-4 text-gray-400">Loading your creations...</p>
+          </div>
+        ) : sharedImages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <p className="text-gray-400">You haven't shared any creations yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {sharedImages.map((image) => (
+              <SharedImageCard
+                key={image.id}
+                image={image}
               />
             ))}
           </div>

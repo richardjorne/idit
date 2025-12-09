@@ -31,11 +31,6 @@ const ImageGallery: React.FC = () => {
     }
   }, [page, isLoading, hasMore]);
 
-  useEffect(() => {
-    loadMoreImages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const loaderRef = useInfiniteScroll(loadMoreImages, isLoading);
 
   return (

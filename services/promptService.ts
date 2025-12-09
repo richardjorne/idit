@@ -51,9 +51,7 @@ export interface UpdatePromptData {
   isPublic?: boolean;
 }
 
-// Use environment variable in production, fallback to localhost for development
-const API_BASE_URL =
-  import.meta.env.VITE_AUTH_BASE_URL || 'http://localhost:5000';
+import { API_BASE_URL } from './apiConfig';
 
 /**
  * Fetch all prompts for a specific user
@@ -174,9 +172,90 @@ export async function likePrompt(promptId: string): Promise<{ promptId: string; 
 
   const data = await res.json();
 
-  if (!res.ok) {
-    throw new Error(data.error || 'Failed to like prompt');
+  
+
+    if (!res.ok) {
+
+      throw new Error(data.error || 'Failed to like prompt');
+
+    }
+
+  
+
+    return data;
+
   }
 
-  return data;
-}
+  
+
+  
+
+  export interface ImageAsset {
+
+    id:string;
+
+    url: string;
+
+    width: number;
+
+    height: number;
+
+    prompt: {
+
+      id: string;
+
+      title: string;
+
+      content: string;
+
+      author: {
+
+        id: string;
+
+        username: string;
+
+      };
+
+      reward: number;
+
+    };
+
+  }
+
+  
+
+  /**
+
+   * Fetch all shared images for a specific user
+
+   */
+
+  export async function fetchUserSharedImages(userId: string, page: number = 1, limit: number = 20): Promise<ImageAsset[]> {
+
+    const res = await fetch(`${API_BASE_URL}/api/prompts/user/${userId}/images/shared?page=${page}&limit=${limit}`, {
+
+      method: 'GET',
+
+      headers: { 'Content-Type': 'application/json' },
+
+    });
+
+  
+
+    const data = await res.json();
+
+  
+
+    if (!res.ok) {
+
+      throw new Error(data.error || 'Failed to fetch user shared images');
+
+    }
+
+  
+
+    return data as ImageAsset[];
+
+  }
+
+  

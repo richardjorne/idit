@@ -1,4 +1,5 @@
 import { EditSession } from '../types';
+import { API_BASE_URL } from './apiConfig';
 
 // Template function to polish a prompt.
 // In a real scenario, this would call a backend API to an LLM.
@@ -17,7 +18,7 @@ export const generateImage = async (session: Omit<EditSession, 'sessionId' | 'st
   console.log('Starting image generation with session:', session);
   try {
     //Create a edit session
-    const createResp = await fetch('/api/edit-sessions', {
+    const createResp = await fetch(`${API_BASE_URL}/api/edit-sessions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: session.prompt, model: session.modelName })
@@ -33,7 +34,7 @@ export const generateImage = async (session: Omit<EditSession, 'sessionId' | 'st
     //If there is an input image URL, add it as a source image 
     if ((session as any).inputImageUrl) {
       try {
-        await fetch(`/api/edit-sessions/${sessionId}/source-images`, {
+        await fetch(`${API_BASE_URL}/api/edit-sessions/${sessionId}/source-images`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ urls: [(session as any).inputImageUrl] })
@@ -44,7 +45,7 @@ export const generateImage = async (session: Omit<EditSession, 'sessionId' | 'st
     }
 
     //Ask backend to generate images
-    const genResp = await fetch(`/api/edit-sessions/${sessionId}/generate`, {
+    const genResp = await fetch(`${API_BASE_URL}/api/edit-sessions/${sessionId}/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ numImages: 1 })
@@ -54,7 +55,7 @@ export const generateImage = async (session: Omit<EditSession, 'sessionId' | 'st
       throw new Error(`Generation failed: ${genResp.status}`);
     }
 
-    const genBody = await genResp.json();
+    const genBody = await genBody.json();
     const images = genBody.images || [];
     if (images.length === 0) {
       throw new Error('No images returned from generation endpoint');
@@ -88,7 +89,7 @@ export const shareToGallery = async (session: EditSession): Promise<void> => {
   const imageId = last?.id;
 
   if (imageId) {
-    const resp = await fetch(`/api/images/${imageId}/share`, { method: 'POST' });
+    const resp = await fetch(`${API_BASE_URL}/api/images/${imageId}/share`, { method: 'POST' });
     if (!resp.ok) throw new Error('Failed to share image');
     return;
   }
