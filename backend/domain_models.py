@@ -198,8 +198,6 @@ class EditSessionLegacy:
         self.outputs: List[ImageAsset] = []
         self.reused_prompt_id: Optional[int] = None
 
-        self.polished_prompt_text: Optional[str] = None
-
     def add_input(self, image: ImageAsset):
         self.inputs.append(image)
 

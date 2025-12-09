@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { EditSession } from '../../types';
-import { generateImage } from '../../services/editSessionService';
+import { generateImageWithOpenRouter } from '../../services/openRouterService';
 
 const GeneratingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,7 +11,10 @@ const GeneratingPage: React.FC = () => {
   useEffect(() => {
     const runGeneration = async () => {
       try {
-        const outputImageUrl = await generateImage(session);
+        if (!session.inputImageUrl) {
+          throw new Error("Input image is not available in the session.");
+        }
+        const outputImageUrl = await generateImageWithOpenRouter(session, session.inputImageUrl, session.prompt);
         const finalSession: EditSession = {
           ...session,
           status: 'SUCCEEDED',

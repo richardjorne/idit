@@ -8,7 +8,7 @@ export interface AuthUser {
 
 // Use environment variable in production, fallback to localhost for development
 const AUTH_BASE_URL =
-  import.meta.env.VITE_AUTH_BASE_URL || 'http://localhost:5000';
+  import.meta.env.VITE_AUTH_BASE_URL || 'http://localhost:5001';
 
 export async function registerUser(
   username: string,

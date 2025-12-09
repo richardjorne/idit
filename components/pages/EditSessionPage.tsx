@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { EditSession } from '../../types';
-import { polishPrompt, generateImage } from '../../services/editSessionService';
+import { generateImageWithOpenRouter } from '../../services/openRouterService';
 import Button from '../ui/Button';
 import Spinner from '../ui/Spinner';
 
@@ -27,7 +27,6 @@ const EditSessionPage: React.FC = () => {
     };
     return initialState;
   });
-  const [isPolishing, setIsPolishing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -41,25 +40,21 @@ const EditSessionPage: React.FC = () => {
     setSession(prev => ({ ...prev, [name]: parseFloat(value) }));
   };
   
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const fileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
-      setSession(prev => ({ ...prev, inputImageUrl: URL.createObjectURL(file) }));
-    }
-  };
-
-  const handlePolishPrompt = async () => {
-    if (!session.prompt) return;
-    setIsPolishing(true);
-    try {
-      const polished = await polishPrompt(session.prompt);
-      setSession(prev => ({ ...prev, prompt: polished }));
-    } catch (error) {
-      console.error("Failed to polish prompt:", error);
-      // Optionally, show an error to the user
-    } finally {
-      setIsPolishing(false);
+      const dataUrl = await fileToDataUrl(file);
+      setSession(prev => ({ ...prev, inputImageUrl: dataUrl }));
     }
   };
 
@@ -112,11 +107,6 @@ const EditSessionPage: React.FC = () => {
           rows={4}
           placeholder="e.g., a majestic lion in a futuristic city, photorealistic"
         />
-        <div className="flex items-center justify-between mt-2">
-            <Button onClick={handlePolishPrompt} disabled={isPolishing || !session.prompt}>
-            {isPolishing ? <Spinner /> : '✨ Polish Prompt'}
-            </Button>
-        </div>
       </div>
 
       {/* Generation Parameters */}

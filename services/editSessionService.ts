@@ -1,17 +1,6 @@
 import { EditSession } from '../types';
 import { API_BASE_URL } from './apiConfig';
 
-// Template function to polish a prompt.
-// In a real scenario, this would call a backend API to an LLM.
-export const polishPrompt = async (prompt: string): Promise<string> => {
-  console.log('Polishing prompt:', prompt);
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  const polishedPrompt = `An enhanced, highly-detailed, and photorealistic version of: ${prompt}`;
-  console.log('Polished prompt:', polishedPrompt);
-  return polishedPrompt;
-};
-
 // Template function to generate an image.
 // This would call the backend to start the generation process.
 export const generateImage = async (session: Omit<EditSession, 'sessionId' | 'status' | 'outputImageUrl'>): Promise<string> => {
@@ -33,15 +22,11 @@ export const generateImage = async (session: Omit<EditSession, 'sessionId' | 'st
 
     //If there is an input image URL, add it as a source image 
     if ((session as any).inputImageUrl) {
-      try {
-        await fetch(`${API_BASE_URL}/api/edit-sessions/${sessionId}/source-images`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ urls: [(session as any).inputImageUrl] })
-        });
-      } catch (err) {
-        console.warn('Failed to register source image URL with backend (this may be expected for blob URLs).', err);
-      }
+      await fetch(`${API_BASE_URL}/api/edit-sessions/${sessionId}/source-images`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls: [(session as any).inputImageUrl] })
+      });
     }
 
     //Ask backend to generate images
@@ -55,7 +40,7 @@ export const generateImage = async (session: Omit<EditSession, 'sessionId' | 'st
       throw new Error(`Generation failed: ${genResp.status}`);
     }
 
-    const genBody = await genBody.json();
+    const genBody = await genResp.json();
     const images = genBody.images || [];
     if (images.length === 0) {
       throw new Error('No images returned from generation endpoint');
